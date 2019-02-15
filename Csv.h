@@ -1,5 +1,5 @@
-#ifndef CSV_H
-#define CSV_H
+#ifndef Csv_H
+#define Csv_H
 
 #include <QFile>
 #include <QString>
@@ -9,11 +9,18 @@ class Csv
 {
 public:
     Csv();
-    QList<QVariantMap> readAll();
+    virtual ~Csv();
+
     bool open(const QString &fileName);
+    QList<QVariantMap> readAll();
+    bool write(const QList<QVariantMap> &maps);
+    void close();
+
+private:
+    QStringList splitCSVLine(const QString &lineStr);
 
 private:
     QFile *m_file;
 };
 
-#endif // CSV_H
+#endif // Csv_H

@@ -1,16 +1,24 @@
 #include "Csv.h"
 
 #include <QCoreApplication>
-#include <QJsonDocument>
 #include <QFile>
 #include <QDebug>
+#include <QStringList>
+#include <QTextCodec>
 
-const QStringList Languages = {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+static const QStringList Languages = {
     "zh_CN", "en"
 };
+#endif
 
 static QString convertContext(QList<QVariantMap> source, QString contextTitle, QString language)
 {
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+    QStringList Languages;
+    Languages<<"zh_CN"<<"en";
+#endif
+
     QString context = QString("<context>\n");
     context += QString("\t<name>%1</name>\n").arg(contextTitle);
     for (int i = 0; i < source.count(); i++) {
@@ -52,6 +60,15 @@ static bool convert(QList<QVariantMap> source, QString language, QString outputF
 
 int main(int argc, char *argv[])
 {
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF8"));
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF8"));
+    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF8"));
+    const char *ts2qmCmdLine = "lrelease-qt4 *.ts";
+#else
+    const char *ts2qmCmdLine = "lrelease *.ts";
+#endif
+
     QString file = "translation.csv";
     if (argc == 2) {
         file = argv[1];
@@ -70,7 +87,7 @@ int main(int argc, char *argv[])
     convert(csvContexts, "zh_CN", "zh_CN.ts");
     convert(csvContexts, "en", "en.ts");
 
-    if (system("lrelease *.ts") == 0)
+    if (system(ts2qmCmdLine) == 0)
         qDebug()<<"Success!!!";
     else
         qDebug()<<"Failed!!!";
